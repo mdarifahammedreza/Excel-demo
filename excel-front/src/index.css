@@ -1,0 +1,15 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+@theme {
+  --color-primary-blue: oklch(0.55 0.18 265);
+  --color-secondary-blue: oklch(0.74 0.15 250);
+  --color-primary-orange: oklch(0.72 0.23 40);
+  --color-secondary-orange: oklch(0.84 0.17 60);
+}
+.input-style {
+  @apply w-full px-4 py-2 border border-gray-300 rounded-md outline-none focus:ring-2 focus:ring-primary-blue;
+}
+.leaflet-container {
+  border-radius: 0.5rem;
+  width: 100%;
+}

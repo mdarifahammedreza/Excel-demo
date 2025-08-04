@@ -1,0 +1,75 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:7.2
+    container_name: redis-server
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:6.0
+    container_name: courier-mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  mongo-express:
+    image: mongo-express:1.0.0-alpha
+    container_name: courier-mongo-express
+    restart: always
+    depends_on:
+      - mongo
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+  backend:
+    image: execlbackenddev
+    container_name: execlbackend
+    build:
+      context: ./courier-backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+      - redis
+    environment:
+      PORT: 5000
+      MONGO_URI: "mongodb://root:example@mongo:27017"
+      JWT_SECRET: "J^F8$gTz*ePx9@k#RuVqB7wz!4DnMcYpLh3XoSvA"
+      OPENCAGE_API_KEY: "0a2336c4595d459994162c7577e8b89a"
+      REDIS_URL: "redis://redis:6379"
+    restart: unless-stopped
+
+  frontend:
+    image: execlfrontdev
+    container_name: execlfront
+    build:
+      context: ./excel-front
+
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:5000/api
+
+    depends_on:
+      - backend
+    # command: ["npm", "run", "dev"]
+    restart: unless-stopped
+volumes:
+  redis_data:
+  mongo_data:
